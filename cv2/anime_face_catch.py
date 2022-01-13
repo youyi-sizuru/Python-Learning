@@ -2,11 +2,12 @@ import os
 
 import cv2
 from pathlib import Path
+from output_video import VideoOuter
 
 
 def find_the_most_right_face(face_list):
     right_face = None
-    for (x, y, width, height) in faces:
+    for (x, y, width, height) in face_list:
         if right_face is None:
             right_face = (x, y, width, height)
         (_, _, right_width, right_height) = right_face
@@ -22,7 +23,7 @@ if __name__ == '__main__':
     video_cap = cv2.VideoCapture(os.path.join(project_root_path, "res/anime.flv"))
     # 读取动漫人脸级联分类器
     face_cascade = cv2.CascadeClassifier(os.path.join(project_root_path, "res/lbpcascade_animeface.xml"))
-    cache_center_file = os.path.join(project_root_path, "cache/anime_cache.txt")
+    cache_center_file = os.path.join(project_root_path, "cache/anime_face_cache.txt")
     # 读取缓存的地址
     if os.path.exists(cache_center_file):
         with open(cache_center_file) as f:
@@ -75,35 +76,4 @@ if __name__ == '__main__':
             os.makedirs(cache_dir)
         with open(cache_center_file, 'w+') as f:
             f.write(','.join(map(lambda x: str(int(x)), frame_center_list)))
-    video_cap = cv2.VideoCapture(os.path.join(project_root_path, "res/anime.flv"))
-    fourcc = cv2.VideoWriter_fourcc('F', 'L', 'V', '1')
-    video_writer = cv2.VideoWriter(os.path.join(project_root_path, "cache/anime_output.flv"), fourcc, 30.0, (600, 1080))
-    frame_index = 0
-    while True:
-        _, frame = video_cap.read()
-        if frame is None or frame_index >= len(frame_center_list):
-            break
-        center = frame_center_list[frame_index]
-        if center < 300:
-            left_x = 0
-            right_x = 600
-        elif center > 1920 - 300:
-            left_x = 1920 - 600
-            right_x = 1920
-        else:
-            left_x = center - 300
-            right_x = center + 300
-        # 裁剪中心点
-        frame = frame[0:1080, int(left_x):int(right_x)]
-        print("write %d frame to video" % frame_index)
-        try:
-            video_writer.write(frame)
-        except:
-            print("write error, change plan")
-            save_image = os.path.join(project_root_path, "cache/temp.png")
-            cv2.imwrite(save_image, frame)
-            read_frame = cv2.imread(save_image)
-            video_writer.write(read_frame)
-        frame_index += 1
-    video_cap.release()
-    video_writer.release()
+    VideoOuter(frame_center_list).start()
