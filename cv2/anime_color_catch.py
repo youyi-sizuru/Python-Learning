@@ -56,7 +56,7 @@ if __name__ == '__main__':
                 continue
             contour = contours[np.argmax(list(map(cv2.contourArea, contours)))]
             (x, y, width, height) = cv2.boundingRect(contour)
-            if width / height > 4 or height / width > 4 or height * width < 500:
+            if width / height > 4 or height / width > 4 or height * width < 1100:
                 print("frame %d is not a right color" % frame_index)
                 continue
             mask = np.zeros_like(frame)
